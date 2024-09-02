@@ -20,17 +20,29 @@ export default function Login() {
     setIsLoading(true);
     setError('');
 
-    const result = await signIn('credentials', {
-      username,
-      password,
-      redirect: false,
-    });
+    try {
+      const response = await fetch('/api/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (result?.error) {
-      setError('Invalid username or password');
-      setIsLoading(false);
-    } else {
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'An error occurred during login');
+      }
+
+      // Login successful
       router.push('/dashboard');
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,22 +74,22 @@ export default function Login() {
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="username" className="block text-sm font-medium text-gray-700">
-                Username
+              <label htmlFor="Email" className="block text-sm font-medium text-gray-700">
+                Email
               </label>
               <input
-                id="username"
+                id="Email"
                 type="text"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 required
                 className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                placeholder="Enter your username"
+                placeholder="Ingrese su Email"
               />
             </div>
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                Password
+                Contraseña
               </label>
               <input
                 id="password"
@@ -86,7 +98,7 @@ export default function Login() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                placeholder="Enter your password"
+                placeholder="Ingrese su Contraseña"
               />
             </div>
             <div>
@@ -97,7 +109,7 @@ export default function Login() {
                   isLoading ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               >
-                {isLoading ? 'Loading...' : 'LOGIN'}
+                {isLoading ? 'Loading...' : 'INICIAR SESION'}
               </button>
             </div>
           </form>
