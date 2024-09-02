@@ -1,5 +1,5 @@
 // app/components/GlobalStatistics.tsx
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
 
@@ -8,7 +8,7 @@ export default function GlobalStatistics() {
 
   useEffect(() => {
     fetch('/api/statistics/global')
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setStats);
   }, []);
 

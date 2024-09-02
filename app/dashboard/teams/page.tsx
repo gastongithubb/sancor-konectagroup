@@ -68,11 +68,7 @@ export default function TeamManagement() {
           placeholder="New Team Name"
           required
         />
-        <select
-          value={selectedLeader}
-          onChange={(e) => setSelectedLeader(e.target.value)}
-          required
-        >
+        <select value={selectedLeader} onChange={(e) => setSelectedLeader(e.target.value)} required>
           <option value="">Select Team Leader</option>
           {users
             .filter((user) => user.role === 'leader')

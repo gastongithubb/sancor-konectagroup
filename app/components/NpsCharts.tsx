@@ -14,8 +14,8 @@ export default function NPSChart({ teamId }: { teamId: number }) {
 
   useEffect(() => {
     fetch(`/api/nps?teamId=${teamId}`)
-      .then(response => response.json())
-      .then(data => setNpsData(data));
+      .then((response) => response.json())
+      .then((data) => setNpsData(data));
   }, [teamId]);
 
   return (

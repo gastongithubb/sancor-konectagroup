@@ -1,9 +1,15 @@
 // app/components/UpdateCase.tsx
-'use client'
+'use client';
 
 import { useState } from 'react';
 
-export default function UpdateCase({ caseId, currentStatus }: { caseId: number, currentStatus: string }) {
+export default function UpdateCase({
+  caseId,
+  currentStatus,
+}: {
+  caseId: number;
+  currentStatus: string;
+}) {
   const [status, setStatus] = useState(currentStatus);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -15,6 +21,7 @@ export default function UpdateCase({ caseId, currentStatus }: { caseId: number, 
     });
 
     if (response.ok) {
+      // eslint-disable-next-line no-console
       // Aquí podrías actualizar el estado local o recargar la página
       console.log('Case updated successfully');
     } else {

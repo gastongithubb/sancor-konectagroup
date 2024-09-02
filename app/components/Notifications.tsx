@@ -1,5 +1,5 @@
 // app/components/Notifications.tsx
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
@@ -17,10 +17,10 @@ export default function Notifications() {
   useEffect(() => {
     if (session?.user) {
       const eventSource = new EventSource(`/api/notifications?userId=${(session.user as any).id}`);
-      
+
       eventSource.onmessage = (event) => {
         const newNotification = JSON.parse(event.data);
-        setNotifications(prev => [newNotification, ...prev].slice(0, 5));
+        setNotifications((prev) => [newNotification, ...prev].slice(0, 5));
       };
 
       return () => {
@@ -33,7 +33,7 @@ export default function Notifications() {
     <div>
       <h2>Recent Notifications</h2>
       <ul>
-        {notifications.map(notification => (
+        {notifications.map((notification) => (
           <li key={notification.id}>
             {notification.message} - {new Date(notification.createdAt).toLocaleString()}
           </li>

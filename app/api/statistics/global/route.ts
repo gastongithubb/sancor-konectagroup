@@ -12,7 +12,7 @@ export async function GET() {
     return NextResponse.json({
       totalCases,
       openCases,
-      averageNPS
+      averageNPS,
     });
   } catch (error) {
     return NextResponse.json({ error: 'Error fetching global statistics' }, { status: 500 });

@@ -11,11 +11,9 @@ export default function TeamMemberList({ members }: { members: Member[] }) {
     <div>
       <h3>Team Members</h3>
       <ul>
-        {members.map(member => (
+        {members.map((member) => (
           <li key={member.id}>
-            <Link href={`/dashboard/agent/${member.id}`}>
-              {member.username}
-            </Link>
+            <Link href={`/dashboard/agent/${member.id}`}>{member.username}</Link>
           </li>
         ))}
       </ul>

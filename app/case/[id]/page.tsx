@@ -1,27 +1,27 @@
 // app/case/[id]/page.tsx
-import { getServerSession } from "next-auth/next";
-import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import UpdateCaseForm from "@/app/components/UpdateCaseForm";
-import CommentList from "@/app/components/CommentList";
+import { getServerSession } from 'next-auth/next';
+import { redirect } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/app/auth'; // Importación corregida
+import UpdateCaseForm from '@/app/components/UpdateCaseForm';
+import CommentList from '@/app/components/CommentList';
 
 export default async function CaseDetail({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
-    redirect("/auth/signin");
+    redirect('/auth/signin');
   }
 
   const case_ = await prisma.case.findUnique({
     where: { id: parseInt(params.id) },
-    include: { 
+    include: {
       assignee: true,
       comments: {
         orderBy: { createdAt: 'desc' },
-        take: 10
-      }
-    }
+        take: 10,
+      },
+    },
   });
 
   if (!case_) {
@@ -35,7 +35,7 @@ export default async function CaseDetail({ params }: { params: { id: string } })
       <p>Assigned to: {case_.assignee.email}</p>
       <p>Created at: {case_.createdAt.toLocaleString()}</p>
       <p>Description: {case_.description}</p>
-      
+
       <UpdateCaseForm caseId={case_.id} currentStatus={case_.status} />
       <CommentList comments={case_.comments} />
     </div>

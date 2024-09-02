@@ -1,31 +1,46 @@
-// app/api/chat/stream/route.ts
-import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
-  const headers = new Headers();
-  headers.append('Content-Type', 'text/event-stream');
-  headers.append('Cache-Control', 'no-cache');
-  headers.append('Connection', 'keep-alive');
+export const runtime = 'edge';
+
+export async function GET(request: NextRequest) {
+  const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     async start(controller) {
       const sendMessage = (message: any) => {
-        controller.enqueue(`data: ${JSON.stringify(message)}\n\n`);
+        const formattedMessage = JSON.stringify(message);
+        controller.enqueue(encoder.encode(`data: ${formattedMessage}\n\n`));
       };
 
-      // Set up a real-time listener for new messages
-      // This is a simplified example. In a real app, you'd use a proper pub/sub system.
-      setInterval(async () => {
-        const latestMessage = await prisma.chatMessage.findFirst({
-          orderBy: { createdAt: 'desc' },
+      // Simulación de mensajes en tiempo real
+      // En una aplicación real, esto se conectaría a una fuente de datos en tiempo real
+      let messageCount = 0;
+      const interval = setInterval(() => {
+        messageCount++;
+        sendMessage({
+          id: messageCount.toString(),
+          content: `Mensaje de prueba ${messageCount}`,
+          createdAt: new Date().toISOString(),
         });
-        if (latestMessage) {
-          sendMessage(latestMessage);
+
+        if (messageCount >= 10) {
+          clearInterval(interval);
+          controller.close();
         }
       }, 1000);
+
+      // Asegúrate de limpiar el intervalo si la conexión se cierra
+      request.signal.addEventListener('abort', () => {
+        clearInterval(interval);
+      });
     },
   });
 
-  return new NextResponse(stream, { headers });
+  return new NextResponse(stream, {
+    headers: {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+    },
+  });
 }

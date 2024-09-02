@@ -12,7 +12,7 @@ export async function GET(request: Request) {
   const headers = new Headers({
     'Content-Type': 'text/event-stream',
     'Cache-Control': 'no-cache',
-    'Connection': 'keep-alive'
+    Connection: 'keep-alive',
   });
 
   const stream = new ReadableStream({
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
         const notification = {
           id: Date.now().toString(),
           message,
-          createdAt: new Date()
+          createdAt: new Date(),
         };
         controller.enqueue(encoder.encode(`data: ${JSON.stringify(notification)}\n\n`));
       };
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
       return () => {
         clearInterval(interval);
       };
-    }
+    },
   });
 
   return new NextResponse(stream, { headers });

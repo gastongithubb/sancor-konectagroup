@@ -1,14 +1,14 @@
 // app/dashboard/page.tsx
-import { getServerSession } from "next-auth/next";
-import { redirect } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import { authOptions } from "../api/auth/[...nextauth]/route";
+import { getServerSession } from 'next-auth/next';
+import { redirect } from 'next/navigation';
+import { prisma } from '@/lib/prisma';
+import { authOptions } from '@/app/auth';
 
 export default async function Dashboard() {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
-    redirect("/auth/signin");
+    redirect('/auth/signin');
   }
 
   const user = await prisma.user.findUnique({
@@ -20,12 +20,15 @@ export default async function Dashboard() {
   }
 
   switch (user.role) {
-    case "manager":
-      redirect("/dashboard/manager");
-    case "leader":
-      redirect("/dashboard/leader");
-    case "agent":
-      redirect("/dashboard/agent");
+    case 'manager':
+      redirect('/dashboard/manager');
+      break;
+    case 'leader':
+      redirect('/dashboard/leader');
+      break;
+    case 'agent':
+      redirect('/dashboard/agent');
+      break;
     default:
       return <div>Invalid user role</div>;
   }

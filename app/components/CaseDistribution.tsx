@@ -1,5 +1,5 @@
 // app/components/CaseDistribution.tsx
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -16,7 +16,7 @@ export default function CaseDistribution({ teamId }: { teamId: number }) {
 
   useEffect(() => {
     fetch(`/api/case-distribution?teamId=${teamId}`)
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setDistribution);
   }, [teamId]);
 
@@ -42,7 +42,7 @@ export default function CaseDistribution({ teamId }: { teamId: number }) {
       </ResponsiveContainer>
       <ul>
         {distribution.map((entry, index) => (
-          <li key={entry.status} style={{color: COLORS[index % COLORS.length]}}>
+          <li key={entry.status} style={{ color: COLORS[index % COLORS.length] }}>
             {entry.status}: {entry.count}
           </li>
         ))}

@@ -13,10 +13,11 @@ export default function CaseList({ cases }: { cases: Case[] }) {
     <div>
       <h3>Recent Cases</h3>
       <ul>
-        {cases.map(case_ => (
+        {cases.map((case_) => (
           <li key={case_.id}>
             <Link href={`/case/${case_.id}`}>
-              {case_.title} - Status: {case_.status} - Created: {case_.createdAt.toLocaleDateString()}
+              {case_.title} - Status: {case_.status} - Created:{' '}
+              {case_.createdAt.toLocaleDateString()}
             </Link>
           </li>
         ))}

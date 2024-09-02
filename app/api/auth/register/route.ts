@@ -31,7 +31,10 @@ export async function POST(request: Request) {
       data: userData,
     });
 
-    return NextResponse.json({ message: 'User created successfully', userId: user.id }, { status: 201 });
+    return NextResponse.json(
+      { message: 'User created successfully', userId: user.id },
+      { status: 201 }
+    );
   } catch (error) {
     console.error('Error creating user:', error);
     return NextResponse.json({ error: 'Error creating user' }, { status: 500 });

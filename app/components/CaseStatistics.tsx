@@ -1,5 +1,5 @@
 // app/components/CaseStatistics.tsx
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
 
@@ -8,7 +8,7 @@ export default function CaseStatistics({ teamId }: { teamId: number }) {
 
   useEffect(() => {
     fetch(`/api/cases/stats?teamId=${teamId}`)
-      .then(res => res.json())
+      .then((res) => res.json())
       .then(setStats);
   }, [teamId]);
 

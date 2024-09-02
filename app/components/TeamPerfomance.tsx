@@ -1,5 +1,5 @@
 // app/components/TeamPerformance.tsx
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
 
@@ -9,18 +9,44 @@ interface TeamMemberPerformance {
   averageResolutionTime: number;
 }
 
-export default function TeamPerformance({ teamId }: { teamId: number }) {
-  const [performance, setPerformance] = useState<TeamMemberPerformance[]>([]);
+interface Team {
+  id: number;
+  name: string;
+  _count: { members: number };
+  nps: { score: number }[];
+}
+
+interface TeamPerformanceProps {
+  teamId?: number;
+  teams?: Team[];
+}
+
+export default function TeamPerformance({ teamId, teams }: TeamPerformanceProps) {
+  const [performances, setPerformances] = useState<{ [key: number]: TeamMemberPerformance[] }>({});
 
   useEffect(() => {
-    fetch(`/api/team-performance?teamId=${teamId}`)
-      .then(res => res.json())
-      .then(setPerformance);
-  }, [teamId]);
+    const fetchPerformances = async () => {
+      const performanceData: { [key: number]: TeamMemberPerformance[] } = {};
+      if (teamId) {
+        const response = await fetch(`/api/team-performance?teamId=${teamId}`);
+        const data = await response.json();
+        performanceData[teamId] = data;
+      } else if (teams) {
+        for (const team of teams) {
+          const response = await fetch(`/api/team-performance?teamId=${team.id}`);
+          const data = await response.json();
+          performanceData[team.id] = data;
+        }
+      }
+      setPerformances(performanceData);
+    };
 
-  return (
-    <div>
-      <h3>Team Performance</h3>
+    fetchPerformances();
+  }, [teamId, teams]);
+
+  const renderTeamPerformance = (id: number, name: string) => (
+    <div key={id}>
+      <h3>{name}</h3>
       <table>
         <thead>
           <tr>
@@ -30,7 +56,7 @@ export default function TeamPerformance({ teamId }: { teamId: number }) {
           </tr>
         </thead>
         <tbody>
-          {performance.map(member => (
+          {performances[id]?.map((member) => (
             <tr key={member.username}>
               <td>{member.username}</td>
               <td>{member.casesHandled}</td>
@@ -39,6 +65,29 @@ export default function TeamPerformance({ teamId }: { teamId: number }) {
           ))}
         </tbody>
       </table>
+    </div>
+  );
+
+  if (teamId) {
+    return (
+      <div>
+        <h2>Team Performance</h2>
+        {renderTeamPerformance(teamId, 'Your Team')}
+      </div>
+    );
+  }
+
+  return (
+    <div>
+      <h2>Team Performances</h2>
+      {teams?.map((team) => (
+        <div key={team.id}>
+          <h3>{team.name}</h3>
+          <p>Members: {team._count.members}</p>
+          <p>Latest NPS: {team.nps[0]?.score ?? 'N/A'}</p>
+          {renderTeamPerformance(team.id, team.name)}
+        </div>
+      ))}
     </div>
   );
 }

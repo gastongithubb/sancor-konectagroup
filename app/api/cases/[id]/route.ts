@@ -2,19 +2,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
-export async function PATCH(
-  request: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(request: Request, { params }: { params: { id: string } }) {
   const caseId = parseInt(params.id);
   const { status, comment } = await request.json();
 
   try {
     const updatedCase = await prisma.case.update({
       where: { id: caseId },
-      data: { 
+      data: {
         status,
-        description: comment ? `${comment}\n\n${new Date().toISOString()}` : undefined
+        description: comment ? `${comment}\n\n${new Date().toISOString()}` : undefined,
       },
     });
 

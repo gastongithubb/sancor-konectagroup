@@ -10,10 +10,12 @@ export default function CommentList({ comments }: CommentListProps) {
     <div>
       <h3>Comments</h3>
       <ul>
-        {comments.map(comment => (
+        {comments.map((comment) => (
           <li key={comment.id}>
             <p>{comment.content}</p>
-            <small>By: {comment.createdBy} at {comment.createdAt.toLocaleString()}</small>
+            <small>
+              By: {comment.createdBy} at {comment.createdAt.toLocaleString()}
+            </small>
           </li>
         ))}
       </ul>

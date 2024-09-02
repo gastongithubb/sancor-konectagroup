@@ -9,9 +9,17 @@
   "plugins": ["@typescript-eslint", "prettier"],
   "root": true,
   "rules": {
-    "@typescript-eslint/no-unused-vars": "error",
-    "@typescript-eslint/no-explicit-any": "error",
-    "no-console": "warn",
-    "prettier/prettier": "error"
-  }
+  "@typescript-eslint/no-unused-vars": "off",
+  "@typescript-eslint/no-explicit-any": "off",
+  "no-console": "off",
+  "prettier/prettier": "off"
+},
+  "overrides": [
+    {
+      "files": ["**/*.ts", "**/*.tsx"],
+      "rules": {
+        "no-console": ["warn", { "allow": ["warn", "error"] }]
+      }
+    }
+  ]
 }

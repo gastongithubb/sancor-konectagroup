@@ -1,5 +1,5 @@
 // app/components/LiveChat.tsx
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
@@ -9,6 +9,10 @@ interface Message {
   senderId: string;
   content: string;
   createdAt: Date;
+}
+
+type SessionUser = {
+  id: string;
 }
 
 export default function LiveChat() {
@@ -23,10 +27,10 @@ export default function LiveChat() {
 
       // Set up real-time updates
       const eventSource = new EventSource(`/api/chat?userId=${(session.user as any).id}`);
-      
+
       eventSource.onmessage = (event) => {
         const newMessage = JSON.parse(event.data);
-        setMessages(prev => [...prev, newMessage]);
+        setMessages((prev) => [...prev, newMessage]);
       };
 
       return () => {
@@ -60,7 +64,7 @@ export default function LiveChat() {
     <div>
       <h2>Live Chat</h2>
       <div style={{ height: '300px', overflowY: 'scroll' }}>
-        {messages.map(message => (
+        {messages.map((message) => (
           <div key={message.id}>
             <strong>{message.senderId === (session?.user as any).id ? 'You' : 'Other'}: </strong>
             {message.content}

@@ -22,21 +22,21 @@ export async function GET(request: Request) {
     by: ['status'],
     where: {
       assignee: {
-        teamId: parseInt(teamId)
-      }
+        teamId: parseInt(teamId),
+      },
     },
     _count: {
-      _all: true
-    }
+      _all: true,
+    },
   });
 
   const formattedStats: CaseStats = {
     open: 0,
     inProgress: 0,
-    closed: 0
+    closed: 0,
   };
 
-  stats.forEach(stat => {
+  stats.forEach((stat) => {
     switch (stat.status as CaseStatus) {
       case 'OPEN':
         formattedStats.open = stat._count._all;

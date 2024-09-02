@@ -1,10 +1,16 @@
 // app/components/UpdateCaseForm.tsx
-'use client'
+'use client';
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function UpdateCaseForm({ caseId, currentStatus }: { caseId: number, currentStatus: string }) {
+export default function UpdateCaseForm({
+  caseId,
+  currentStatus,
+}: {
+  caseId: number;
+  currentStatus: string;
+}) {
   const [status, setStatus] = useState(currentStatus);
   const [comment, setComment] = useState('');
   const router = useRouter();

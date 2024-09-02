@@ -1,5 +1,5 @@
 // app/components/Login.tsx
-'use client'
+'use client';
 
 import React, { useState, FormEvent } from 'react';
 import { signIn } from 'next-auth/react';
@@ -50,14 +50,15 @@ export default function Login() {
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <h2 className="text-3xl font-bold text-gray-800 mb-6">
-            <motion.span 
-              className='text-sky-700'
+            <motion.span
+              className="text-sky-700"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.5 }}
             >
               SancorSalud
-            </motion.span> | Login
+            </motion.span>{' '}
+            | Login
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -111,14 +112,14 @@ export default function Login() {
               <span className="block sm:inline">{error}</span>
             </motion.div>
           )}
-          <motion.div 
+          <motion.div
             className="mt-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7, duration: 0.5 }}
           >
             <p className="text-center text-sm text-gray-600">
-              Don't have an account?{' '}
+              Don&apos;t have an account?{' '}
               <Link href="/auth/register" className="font-medium text-blue-950 hover:underline">
                 Register here
               </Link>

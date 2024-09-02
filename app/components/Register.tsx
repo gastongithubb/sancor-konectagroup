@@ -1,5 +1,5 @@
 // app/components/Register.tsx
-'use client'
+'use client';
 
 import React, { useState, FormEvent, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
@@ -24,9 +24,9 @@ export default function Register() {
 
   useEffect(() => {
     fetch('/api/teams')
-      .then(res => res.json())
-      .then(data => setTeams(data))
-      .catch(err => console.error('Error fetching teams:', err));
+      .then((res) => res.json())
+      .then((data) => setTeams(data))
+      .catch((err) => console.error('Error fetching teams:', err));
   }, []);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -38,7 +38,7 @@ export default function Register() {
       email,
       password,
       role,
-      ...(role !== 'manager' && { teamId: parseInt(teamId) })
+      ...(role !== 'manager' && { teamId: parseInt(teamId) }),
     };
 
     const response = await fetch('/api/auth/register', {
@@ -72,14 +72,15 @@ export default function Register() {
           transition={{ delay: 0.2, duration: 0.5 }}
         >
           <h2 className="text-3xl font-bold text-gray-800 mb-6">
-            <motion.span 
-              className='text-sky-700'
+            <motion.span
+              className="text-sky-700"
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.5 }}
             >
               Call Center
-            </motion.span> | Register
+            </motion.span>{' '}
+            | Register
           </h2>
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
@@ -138,8 +139,10 @@ export default function Register() {
                   className="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md text-sm shadow-sm focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
                 >
                   <option value="">Select a team</option>
-                  {teams.map(team => (
-                    <option key={team.id} value={team.id.toString()}>{team.name}</option>
+                  {teams.map((team) => (
+                    <option key={team.id} value={team.id.toString()}>
+                      {team.name}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -167,7 +170,7 @@ export default function Register() {
               <span className="block sm:inline">{error}</span>
             </motion.div>
           )}
-          <motion.div 
+          <motion.div
             className="mt-6"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
