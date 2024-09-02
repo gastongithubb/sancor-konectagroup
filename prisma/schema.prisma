@@ -1,0 +1,76 @@
+// prisma/schema.prisma
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id           Int     @id @default(autoincrement())
+  email     String  @unique
+  password     String
+  role         String
+  teamId       Int?
+  team         Team?   @relation("TeamMembers", fields: [teamId], references: [id])
+  leadingTeam  Team?   @relation("TeamLeader")
+  assignedCases Case[]
+}
+
+model Team {
+  id       Int    @id @default(autoincrement())
+  name     String
+  leaderId Int    @unique
+  leader   User   @relation("TeamLeader", fields: [leaderId], references: [id])
+  members  User[] @relation("TeamMembers")
+  nps      NPS[]
+  balances Balance[]
+}
+
+model NPS {
+  id     Int      @id @default(autoincrement())
+  teamId Int
+  score  Float
+  date   DateTime
+  team   Team     @relation(fields: [teamId], references: [id])
+}
+
+model Balance {
+  id     Int   @id @default(autoincrement())
+  teamId Int
+  amount Float
+  month  Int
+  year   Int
+  team   Team  @relation(fields: [teamId], references: [id])
+}
+
+model Case {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String
+  status      String
+  assignedTo  Int
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  assignee    User     @relation(fields: [assignedTo], references: [id])
+  comments    Comment[]  // Añadimos esta línea para establecer la relación inversa
+}
+
+model ChatMessage {
+  id        Int      @id @default(autoincrement())
+  content   String
+  senderId  String
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String
+  createdAt DateTime @default(now())
+  createdBy String
+  case      Case     @relation(fields: [caseId], references: [id])
+  caseId    Int
+}
