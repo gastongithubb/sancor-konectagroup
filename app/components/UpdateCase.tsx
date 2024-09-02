@@ -21,8 +21,8 @@ export default function UpdateCase({
     });
 
     if (response.ok) {
-      // eslint-disable-next-line no-console
       // Aquí podrías actualizar el estado local o recargar la página
+      // eslint-disable-next-line no-console
       console.log('Case updated successfully');
     } else {
       console.error('Error updating case');
