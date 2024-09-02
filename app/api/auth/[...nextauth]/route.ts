@@ -1,5 +1,5 @@
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth, { NextAuthOptions, User } from "next-auth";
+import NextAuth, { AuthOptions, User } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@next-auth/prisma-adapter";
 import { prisma } from "@/lib/prisma";
@@ -9,7 +9,7 @@ interface ExtendedUser extends User {
   role?: string;
 }
 
-export const authOptions: NextAuthOptions = {
+const authOptions: AuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
