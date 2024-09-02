@@ -22,10 +22,13 @@ export default async function Dashboard() {
   switch (user.role) {
     case 'manager':
       redirect('/dashboard/manager');
+      break
     case 'leader':
       redirect('/dashboard/leader');
+      break
     case 'agent':
       redirect('/dashboard/agent');
+      break
     default:
       return <div>Invalid user role</div>;
   }
