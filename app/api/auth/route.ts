@@ -38,21 +38,11 @@ export async function POST(request: Request) {
       { expiresIn: '1h' }
     );
 
-    // Set the token in a httpOnly cookie
-    const response = NextResponse.json(
-      { message: 'Login successful', user: { id: user.id, email: user.email } },
+    // Return the token in the response
+    return NextResponse.json(
+      { message: 'Login successful', user: { id: user.id, email: user.email }, token },
       { status: 200 }
     );
-
-    response.cookies.set('token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
-      maxAge: 3600, // 1 hour
-      path: '/',
-    });
-
-    return response;
   } catch (error) {
     console.error('Login error:', error);
     if (error instanceof Error) {

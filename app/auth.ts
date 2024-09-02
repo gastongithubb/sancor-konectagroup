@@ -1,5 +1,6 @@
 // app/auth.ts
-import { AuthOptions, User } from 'next-auth';
+import { NextAuthOptions, User } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
@@ -9,7 +10,7 @@ interface ExtendedUser extends User {
   role?: string;
 }
 
-export const authOptions: AuthOptions = {
+export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -37,16 +38,16 @@ export const authOptions: AuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user }: { token: JWT; user?: ExtendedUser }) {
       if (user) {
-        token.role = (user as ExtendedUser).role;
+        token.role = user.role;
         token.email = user.email;
       }
       return token;
     },
-    async session({ session, token }) {
+    async session({ session, token }: { session: any; token: JWT }) {
       if (session?.user) {
-        (session.user as ExtendedUser).role = token.role as string;
+        session.user.role = token.role as string;
         session.user.email = token.email as string;
       }
       return session;
@@ -54,5 +55,8 @@ export const authOptions: AuthOptions = {
   },
   pages: {
     signIn: '/auth/signin',
+  },
+  session: {
+    strategy: 'jwt',
   },
 };

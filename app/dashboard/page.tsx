@@ -12,7 +12,7 @@ export default async function Dashboard() {
   }
 
   const user = await prisma.user.findUnique({
-    where: { email: (session.user as any).email },
+    where: { email: session.user.email as string },
   });
 
   if (!user) {
@@ -22,13 +22,10 @@ export default async function Dashboard() {
   switch (user.role) {
     case 'manager':
       redirect('/dashboard/manager');
-      break;
     case 'leader':
       redirect('/dashboard/leader');
-      break;
     case 'agent':
       redirect('/dashboard/agent');
-      break;
     default:
       return <div>Invalid user role</div>;
   }
