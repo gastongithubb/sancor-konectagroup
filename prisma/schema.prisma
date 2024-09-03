@@ -21,11 +21,11 @@ model User {
 }
 
 model Team {
-  id       Int    @id @default(autoincrement())
+  id       Int       @id @default(autoincrement())
   name     String
-  leaderId Int    @unique
-  leader   User   @relation("TeamLeader", fields: [leaderId], references: [id])
-  members  User[] @relation("TeamMembers")
+  leaderId Int?      @unique
+  leader   User?     @relation("TeamLeader", fields: [leaderId], references: [id])
+  members  User[]    @relation("TeamMembers")
   nps      NPS[]
   balances Balance[]
 }
