@@ -19,14 +19,18 @@ export default async function Dashboard() {
     if (!user) {
       throw new Error('User not found');
     }
-    //no-fallthrough
+
     switch (user.role) {
       case 'manager':
         redirect('/dashboard/manager');
+        // ESLint requires a break statement, but redirect prevents this from executing
+        break;
       case 'leader':
         redirect('/dashboard/leader');
+        break;
       case 'agent':
         redirect('/dashboard/agent');
+        break;
       default:
         throw new Error('Invalid user role');
     }
@@ -34,4 +38,7 @@ export default async function Dashboard() {
     console.error('Dashboard error:', error);
     return <div>An error occurred: {(error as Error).message}</div>;
   }
+
+  // This line will never be reached due to redirects or error handling
+  return null;
 }
