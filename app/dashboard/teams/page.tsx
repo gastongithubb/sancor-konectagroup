@@ -4,33 +4,22 @@ import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/app/components/ui/alert';
 import { Button } from '@/app/components/ui/button';
 import { Input } from '@/app/components/ui/input';
-import { Select } from '@/app/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
 
 interface Team {
   id: number;
   name: string;
-  leaderId: number;
-}
-
-interface User {
-  id: number;
-  username: string;
-  role: string;
 }
 
 export default function TeamManagement() {
   const [teams, setTeams] = useState<Team[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
   const [newTeamName, setNewTeamName] = useState('');
-  const [selectedLeader, setSelectedLeader] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
 
   useEffect(() => {
     fetchTeams();
-    fetchUsers();
   }, []);
 
   const fetchTeams = async () => {
@@ -44,17 +33,6 @@ export default function TeamManagement() {
     }
   };
 
-  const fetchUsers = async () => {
-    try {
-      const response = await fetch('/api/users');
-      if (!response.ok) throw new Error('Failed to fetch users');
-      const data = await response.json();
-      setUsers(data);
-    } catch (error) {
-      setError('Error fetching users');
-    }
-  };
-
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -63,11 +41,10 @@ export default function TeamManagement() {
       const response = await fetch('/api/teams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newTeamName, leaderId: parseInt(selectedLeader) }),
+        body: JSON.stringify({ name: newTeamName }),
       });
       if (!response.ok) throw new Error('Failed to create team');
       setNewTeamName('');
-      setSelectedLeader('');
       fetchTeams();
       setSuccess('Team created successfully');
     } catch (error) {
@@ -106,20 +83,6 @@ export default function TeamManagement() {
               placeholder="New Team Name"
               required
             />
-            <Select
-              value={selectedLeader}
-              onValueChange={setSelectedLeader}
-              required
-            >
-              <option value="">Select Team Leader</option>
-              {users
-                .filter((user) => user.role === 'leader')
-                .map((user) => (
-                  <option key={user.id} value={user.id}>
-                    {user.username}
-                  </option>
-                ))}
-            </Select>
             <Button type="submit">Create Team</Button>
           </form>
         </CardContent>

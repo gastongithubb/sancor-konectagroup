@@ -56,8 +56,6 @@ export default async function ManagerDashboard() {
             <div className="flex flex-wrap gap-2 mb-4">
               <DashboardLink href="/dashboard/teams">Equipos</DashboardLink>
               <DashboardLink href="/auth/register">Register New User</DashboardLink>
-              <DashboardLink href="/dashboard/leader">Lider Dashboard</DashboardLink>
-              <DashboardLink href="/dashboard/agent">Agentes Dashboard</DashboardLink>
             </div>
           </CardContent>
         </Card>
