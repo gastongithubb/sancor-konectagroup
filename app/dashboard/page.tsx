@@ -11,34 +11,22 @@ export default async function Dashboard() {
     redirect('/auth/signin');
   }
 
-  try {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+  });
 
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    switch (user.role) {
-      case 'manager':
-        redirect('/dashboard/manager');
-        // ESLint requires a break statement, but redirect prevents this from executing
-        break;
-      case 'leader':
-        redirect('/dashboard/leader');
-        break;
-      case 'agent':
-        redirect('/dashboard/agent');
-        break;
-      default:
-        throw new Error('Invalid user role');
-    }
-  } catch (error) {
-    console.error('Dashboard error:', error);
-    return <div>An error occurred: {(error as Error).message}</div>;
+  if (!user) {
+    return <div>User not found</div>;
   }
 
-  // This line will never be reached due to redirects or error handling
-  return null;
+  switch (user.role) {
+    case 'manager':
+      redirect('/dashboard/manager');
+    case 'leader':
+      redirect('/dashboard/leader');
+    case 'agent':
+      redirect('/dashboard/agent');
+    default:
+      return <div>Invalid user role</div>;
+  }
 }

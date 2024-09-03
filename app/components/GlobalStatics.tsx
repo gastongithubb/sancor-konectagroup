@@ -3,21 +3,46 @@
 
 import { useState, useEffect } from 'react';
 
+interface Stats {
+  totalCases: number;
+  openCases: number;
+  averageNPS: number;
+}
+
 export default function GlobalStatistics() {
-  const [stats, setStats] = useState({ totalCases: 0, openCases: 0, averageNPS: 0 });
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/statistics/global')
-      .then((res) => res.json())
-      .then(setStats);
+      .then((res) => {
+        if (!res.ok) throw new Error('Failed to fetch statistics');
+        return res.json();
+      })
+      .then(setStats)
+      .catch((err) => setError(err.message));
   }, []);
 
+  if (error) return <div className="text-red-500">Error: {error}</div>;
+  if (!stats) return <div>Loading statistics...</div>;
+
   return (
-    <div>
-      <h2>Global Statistics</h2>
-      <p>Total Cases: {stats.totalCases}</p>
-      <p>Open Cases: {stats.openCases}</p>
-      <p>Average NPS: {stats.averageNPS.toFixed(2)}</p>
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <h2 className="text-xl font-bold mb-4">Global Statistics</h2>
+      <div className="grid grid-cols-3 gap-4">
+        <div>
+          <p className="text-gray-600">Total Cases</p>
+          <p className="text-2xl font-bold">{stats.totalCases}</p>
+        </div>
+        <div>
+          <p className="text-gray-600">Open Cases</p>
+          <p className="text-2xl font-bold">{stats.openCases}</p>
+        </div>
+        <div>
+          <p className="text-gray-600">Average NPS</p>
+          <p className="text-2xl font-bold">{stats.averageNPS.toFixed(2)}</p>
+        </div>
+      </div>
     </div>
   );
 }

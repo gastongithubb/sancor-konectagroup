@@ -23,44 +23,53 @@ interface TeamPerformanceProps {
 
 export default function TeamPerformance({ teamId, teams }: TeamPerformanceProps) {
   const [performances, setPerformances] = useState<{ [key: number]: TeamMemberPerformance[] }>({});
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPerformances = async () => {
-      const performanceData: { [key: number]: TeamMemberPerformance[] } = {};
-      if (teamId) {
-        const response = await fetch(`/api/team-performance?teamId=${teamId}`);
-        const data = await response.json();
-        performanceData[teamId] = data;
-      } else if (teams) {
-        for (const team of teams) {
-          const response = await fetch(`/api/team-performance?teamId=${team.id}`);
-          const data = await response.json();
-          performanceData[team.id] = data;
+      try {
+        const performanceData: { [key: number]: TeamMemberPerformance[] } = {};
+        const teamsToFetch = teamId ? [{ id: teamId }] : teams;
+
+        if (!teamsToFetch) {
+          throw new Error('No team data provided');
         }
+
+        await Promise.all(
+          teamsToFetch.map(async (team) => {
+            const response = await fetch(`/api/team-performance?teamId=${team.id}`);
+            if (!response.ok) throw new Error(`Failed to fetch data for team ${team.id}`);
+            const data = await response.json();
+            performanceData[team.id] = data;
+          })
+        );
+
+        setPerformances(performanceData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
       }
-      setPerformances(performanceData);
     };
 
     fetchPerformances();
   }, [teamId, teams]);
 
   const renderTeamPerformance = (id: number, name: string) => (
-    <div key={id}>
-      <h3>{name}</h3>
-      <table>
+    <div key={id} className="mb-6">
+      <h3 className="text-lg font-semibold mb-2">{name}</h3>
+      <table className="w-full">
         <thead>
-          <tr>
-            <th>Member</th>
-            <th>Cases Handled</th>
-            <th>Avg. Resolution Time (hours)</th>
+          <tr className="bg-gray-100">
+            <th className="p-2 text-left">Member</th>
+            <th className="p-2 text-left">Cases Handled</th>
+            <th className="p-2 text-left">Avg. Resolution Time (hours)</th>
           </tr>
         </thead>
         <tbody>
           {performances[id]?.map((member) => (
-            <tr key={member.username}>
-              <td>{member.username}</td>
-              <td>{member.casesHandled}</td>
-              <td>{member.averageResolutionTime.toFixed(2)}</td>
+            <tr key={member.username} className="border-b">
+              <td className="p-2">{member.username}</td>
+              <td className="p-2">{member.casesHandled}</td>
+              <td className="p-2">{member.averageResolutionTime.toFixed(2)}</td>
             </tr>
           ))}
         </tbody>
@@ -68,21 +77,23 @@ export default function TeamPerformance({ teamId, teams }: TeamPerformanceProps)
     </div>
   );
 
+  if (error) return <div className="text-red-500">Error: {error}</div>;
+
   if (teamId) {
     return (
-      <div>
-        <h2>Team Performance</h2>
+      <div className="bg-white p-6 rounded-lg shadow-md">
+        <h2 className="text-xl font-bold mb-4">Team Performance</h2>
         {renderTeamPerformance(teamId, 'Your Team')}
       </div>
     );
   }
 
   return (
-    <div>
-      <h2>Team Performances</h2>
+    <div className="bg-white p-6 rounded-lg shadow-md">
+      <h2 className="text-xl font-bold mb-4">Team Performances</h2>
       {teams?.map((team) => (
-        <div key={team.id}>
-          <h3>{team.name}</h3>
+        <div key={team.id} className="mb-6">
+          <h3 className="text-lg font-semibold">{team.name}</h3>
           <p>Members: {team._count.members}</p>
           <p>Latest NPS: {team.nps[0]?.score ?? 'N/A'}</p>
           {renderTeamPerformance(team.id, team.name)}
