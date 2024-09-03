@@ -41,10 +41,30 @@ export default async function ManagerDashboard() {
           <Link href="/auth/register" className="text-blue-500 hover:underline">
             Register New User
           </Link>
+          <Link href="/dashboard/preview/leader" className="text-green-500 hover:underline">
+            Preview Leader Dashboard
+          </Link>
+          <Link href="/dashboard/preview/agent" className="text-purple-500 hover:underline">
+            Preview Agent Dashboard
+          </Link>
         </div>
 
         <GlobalStatistics />
         <TeamPerformance teams={teams} />
+
+        <div className="mt-8">
+          <h2 className="text-xl font-bold mb-4">Dashboard Previews</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="border p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2">Lider Dashboard</h3>
+              <iframe src="/dashboard/leader" className="w-full h-64 border-0"></iframe>
+            </div>
+            <div className="border p-4 rounded-lg">
+              <h3 className="text-lg font-semibold mb-2">Representante Dashboard</h3>
+              <iframe src="/dashboard/agent" className="w-full h-64 border-0"></iframe>
+            </div>
+          </div>
+        </div>
       </div>
     );
   } catch (error) {
