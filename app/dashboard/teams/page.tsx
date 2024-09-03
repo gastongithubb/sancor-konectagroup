@@ -43,12 +43,20 @@ export default function TeamManagement() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: newTeamName }),
       });
-      if (!response.ok) throw new Error('Failed to create team');
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Error response:', errorData);
+        throw new Error(errorData.error || 'Failed to create team');
+      }
       setNewTeamName('');
       fetchTeams();
       setSuccess('Team created successfully');
     } catch (error) {
-      setError('Error creating team');
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred');
+      }
     }
   };
 
