@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 interface Stats {
   totalCases: number;
   openCases: number;
-  averageNPS: number;
+  averageNPS: number | null;
 }
 
 export default function GlobalStatistics() {
@@ -40,7 +40,9 @@ export default function GlobalStatistics() {
         </div>
         <div>
           <p className="text-gray-600">Average NPS</p>
-          <p className="text-2xl font-bold">{stats.averageNPS.toFixed(2)}</p>
+          <p className="text-2xl font-bold">
+            {stats.averageNPS != null ? stats.averageNPS.toFixed(2) : 'N/A'}
+          </p>
         </div>
       </div>
     </div>
