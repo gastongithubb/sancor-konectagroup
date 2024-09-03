@@ -19,20 +19,17 @@ export default async function Dashboard() {
     return <div>User not found</div>;
   }
 
-  switch (user.role) {
-    case 'manager':
-      redirect('/dashboard/manager');
-      // ESLint requires a break statement, but redirect prevents this from executing
-      break;
-    case 'leader':
-      redirect('/dashboard/leader');
-      break;
-    case 'agent':
-      redirect('/dashboard/agent');
-      break;
-    default:
-      return <div>Invalid user role</div>;
-  }
+  /* eslint-disable no-fallthrough */
+switch (user.role) {
+  case 'manager':
+    redirect('/dashboard/manager');
+  case 'leader':
+    redirect('/dashboard/leader');
+  case 'agent':
+    redirect('/dashboard/agent');
+  default:
+    return <div>Invalid user role</div>;
+}
 
   // This line will never be reached due to redirects or the default case
   return null;
