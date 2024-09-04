@@ -1,3 +1,4 @@
+// api/teams/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
     const newTeam = await prisma.team.create({
       data: {
         name,
-        leaderId: leaderId || undefined, // Si no se proporciona leaderId, será undefined
+        leaderId: leaderId || undefined,
       },
     });
 
