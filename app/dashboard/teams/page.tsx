@@ -25,11 +25,18 @@ export default function TeamManagement() {
   const fetchTeams = async () => {
     try {
       const response = await fetch('/api/teams');
-      if (!response.ok) throw new Error('Failed to fetch teams');
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to fetch teams');
+      }
       const data = await response.json();
       setTeams(data);
     } catch (error) {
-      setError('Error fetching teams');
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred while fetching teams');
+      }
     }
   };
 
