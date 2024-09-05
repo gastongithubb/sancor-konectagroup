@@ -43,6 +43,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.role = user.role;
         token.email = user.email;
+        token.id = user.id;
       }
       console.log('JWT callback, token:', JSON.stringify(token, null, 2));
       return token;
@@ -51,6 +52,7 @@ export const authOptions: NextAuthOptions = {
       if (session?.user) {
         session.user.role = token.role as string;
         session.user.email = token.email as string;
+        session.user.id = token.id as string;
       }
       console.log('Session callback, session:', JSON.stringify(session, null, 2));
       return session;

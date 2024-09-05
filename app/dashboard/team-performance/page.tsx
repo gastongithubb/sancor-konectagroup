@@ -58,14 +58,18 @@ function TeamPerformance() {
 
   const fetchTeamData = async () => {
     try {
-      const response = await fetch('/api/team-performance');
+      let url = '/api/team-performance';
+      if (user?.role === 'admin') {
+        // Assume we're getting teamId from somewhere, maybe a state or prop
+        const teamId = 1; // Replace with actual teamId for admin
+        url += `?teamId=${teamId}`;
+      }
+      
+      const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response.json();
         console.error('API Error:', errorData);
-        if (response.status === 403) {
-          throw new Error('Forbidden: You do not have permission to access this data.');
-        }
-        throw new Error('Failed to fetch team data');
+        throw new Error(errorData.error || 'Failed to fetch team data');
       }
       const data: Team = await response.json();
       setTeam(data);
