@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/auth';
-import TeamPerformance from '@/app/components/TeamPerfomance';
-import CaseDistribution from '@/app/components/CaseDistribution';
+import TeamPerformance from '@/components/TeamPerfomance';
+import CaseDistribution from '@/components/CaseDistribution';
 
 export default async function LeaderDashboard() {
   const session = await getServerSession(authOptions);

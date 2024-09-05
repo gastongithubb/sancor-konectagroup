@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/auth'; // Importación corregida
-import UpdateCaseForm from '@/app/components/UpdateCaseForm';
-import CommentList from '@/app/components/CommentList';
+import UpdateCaseForm from '@/components/UpdateCaseForm';
+import CommentList from '@/components/CommentList';
 
 export default async function CaseDetail({ params }: { params: { id: string } }) {
   const session = await getServerSession(authOptions);

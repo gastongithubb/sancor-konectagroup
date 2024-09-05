@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/auth';
-import CaseList from '@/app/components/CaseList';
-import ReportCase from '@/app/components/ReportCase';
+import CaseList from '@/components/CaseList';
+import ReportCase from '@/components/ReportCase';
 
 export default async function AgentDashboard() {
   const session = await getServerSession(authOptions);

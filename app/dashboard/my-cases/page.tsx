@@ -3,8 +3,8 @@ import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/auth';
-import ReportCase from '@/app/components/ReportCase';
-import UpdateCase from '@/app/components/UpdateCase';
+import ReportCase from '@/components/ReportCase';
+import UpdateCase from '@/components/UpdateCase';
 
 export default async function AgentCases() {
   const session = await getServerSession(authOptions);

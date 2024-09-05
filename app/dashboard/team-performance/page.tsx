@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/auth';
-import NPSChart from '@/app/components/NpsCharts';
+import NPSChart from '@/components/NpsCharts';
 
 export default async function TeamPerformance() {
   const session = await getServerSession(authOptions);

@@ -4,12 +4,12 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/auth';
-import GlobalStatistics from '@/app/components/GlobalStatics';
-import TeamPerformance from '@/app/components/TeamPerfomance';
-import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/card';
-import { Button } from '@/app/components/ui/button';
+import GlobalStatistics from '@/components/GlobalStatics';
+import TeamPerformance from '@/components/TeamPerfomance';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription, AlertTitle } from '@/app/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface ExtendedUser {
   role?: string;

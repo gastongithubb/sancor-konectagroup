@@ -1,25 +1,9 @@
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  switch (req.method) {
-    case 'GET':
-      return getTeams(req, res);
-    case 'POST':
-      return createTeam(req, res);
-    case 'PUT':
-      return updateTeam(req, res);
-    case 'DELETE':
-      return deleteTeam(req, res);
-    default:
-      res.setHeader('Allow', ['GET', 'POST', 'PUT', 'DELETE']);
-      res.status(405).end(`Method ${req.method} Not Allowed`);
-  }
-}
-
-async function getTeams(req: NextApiRequest, res: NextApiResponse) {
+export async function GET() {
   try {
     const teams = await prisma.team.findMany({
       include: {
@@ -31,14 +15,14 @@ async function getTeams(req: NextApiRequest, res: NextApiResponse) {
         },
       },
     });
-    res.status(200).json(teams);
+    return NextResponse.json(teams);
   } catch (error) {
-    res.status(500).json({ error: 'Error fetching teams' });
+    return NextResponse.json({ error: 'Error fetching teams' }, { status: 500 });
   }
 }
 
-async function createTeam(req: NextApiRequest, res: NextApiResponse) {
-  const { name, leaderId } = req.body;
+export async function POST(request: NextRequest) {
+  const { name, leaderId } = await request.json();
   try {
     const team = await prisma.team.create({
       data: {
@@ -54,14 +38,14 @@ async function createTeam(req: NextApiRequest, res: NextApiResponse) {
         },
       },
     });
-    res.status(201).json(team);
+    return NextResponse.json(team, { status: 201 });
   } catch (error) {
-    res.status(500).json({ error: 'Error creating team' });
+    return NextResponse.json({ error: 'Error creating team' }, { status: 500 });
   }
 }
 
-async function updateTeam(req: NextApiRequest, res: NextApiResponse) {
-  const { id, name, leaderId } = req.body;
+export async function PUT(request: NextRequest) {
+  const { id, name, leaderId } = await request.json();
   try {
     const team = await prisma.team.update({
       where: { id: Number(id) },
@@ -78,20 +62,20 @@ async function updateTeam(req: NextApiRequest, res: NextApiResponse) {
         },
       },
     });
-    res.status(200).json(team);
+    return NextResponse.json(team);
   } catch (error) {
-    res.status(500).json({ error: 'Error updating team' });
+    return NextResponse.json({ error: 'Error updating team' }, { status: 500 });
   }
 }
 
-async function deleteTeam(req: NextApiRequest, res: NextApiResponse) {
-  const { id } = req.body;
+export async function DELETE(request: NextRequest) {
+  const { id } = await request.json();
   try {
     await prisma.team.delete({
       where: { id: Number(id) },
     });
-    res.status(200).json({ message: 'Team deleted successfully' });
+    return NextResponse.json({ message: 'Team deleted successfully' });
   } catch (error) {
-    res.status(500).json({ error: 'Error deleting team' });
+    return NextResponse.json({ error: 'Error deleting team' }, { status: 500 });
   }
 }
