@@ -3,10 +3,12 @@
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import NPSChart from '@/components/NpsCharts';
+
+const NPSChart = dynamic(() => import('@/components/NpsCharts'), { ssr: false });
 
 interface MemberPerformance {
   name: string;
@@ -30,20 +32,28 @@ interface Team {
   }[];
 }
 
-function TeamPerformanceContent() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+function TeamPerformance() {
+  const [isClient, setIsClient] = useState(false);
   const [team, setTeam] = useState<Team | null>(null);
   const [memberPerformance, setMemberPerformance] = useState<MemberPerformance[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (status === 'unauthenticated' || (session?.user as any)?.role !== 'leader') {
-      router.push('/auth/signin');
-    } else if (status === 'authenticated') {
-      fetchTeamData();
+    setIsClient(true);
+  }, []);
+
+  const { data: session, status } = useSession();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (isClient) {
+      if (status === 'unauthenticated' || (session?.user as any)?.role !== 'leader') {
+        router.push('/auth/signin');
+      } else if (status === 'authenticated') {
+        fetchTeamData();
+      }
     }
-  }, [status, session, router]);
+  }, [isClient, status, session, router]);
 
   const fetchTeamData = async () => {
     try {
@@ -85,7 +95,7 @@ function TeamPerformanceContent() {
     setMemberPerformance(performance);
   };
 
-  if (status === 'loading') {
+  if (!isClient || status === 'loading') {
     return <div>Loading...</div>;
   }
 
@@ -144,8 +154,4 @@ function TeamPerformanceContent() {
   );
 }
 
-export default function TeamPerformance() {
-  return (
-    <TeamPerformanceContent />
-  );
-}
+export default dynamic(() => Promise.resolve(TeamPerformance), { ssr: false });
