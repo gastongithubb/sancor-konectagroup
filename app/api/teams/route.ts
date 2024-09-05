@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      let teamData: Prisma.TeamCreateInput = { name };
+      const teamData: Prisma.TeamCreateInput = { name };
       
       if (leaderId) {
         const leaderIdNumber = parseInt(leaderId, 10);
