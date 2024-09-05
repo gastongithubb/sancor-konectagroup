@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth/next';
 import { prisma } from '@/lib/prisma';
@@ -7,12 +8,15 @@ export async function GET(req: NextRequest) {
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
+    console.log('Unauthorized: No session or user');
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const user = session.user as any; // Asumiendo que hemos extendido el tipo User
+  const user = session.user as any;
+  console.log('User from session:', user);  // Log the user data
 
   if (user.role !== 'leader') {
+    console.log(`Forbidden: User role is ${user.role}, expected 'leader'`);
     return NextResponse.json({ error: 'Forbidden: Only team leaders can access this data' }, { status: 403 });
   }
 
@@ -39,6 +43,7 @@ export async function GET(req: NextRequest) {
     });
 
     if (!teamData) {
+      console.log(`No team found for leader with id ${user.id}`);
       return NextResponse.json({ error: 'No team found for this leader' }, { status: 404 });
     }
 
