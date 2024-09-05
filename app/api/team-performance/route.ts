@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/auth';
 
 export async function GET(req: NextRequest) {
+  console.log('Received request to /api/team-performance');
   const session = await getServerSession(authOptions);
 
   if (!session || !session.user) {
@@ -13,7 +14,7 @@ export async function GET(req: NextRequest) {
   }
 
   const user = session.user as any;
-  console.log('User from session:', user);  // Log the user data
+  console.log('User from session:', JSON.stringify(user, null, 2));
 
   if (user.role !== 'leader') {
     console.log(`Forbidden: User role is ${user.role}, expected 'leader'`);
@@ -47,6 +48,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'No team found for this leader' }, { status: 404 });
     }
 
+    console.log('Successfully fetched team data');
     return NextResponse.json(teamData);
   } catch (error) {
     console.error('Error fetching team performance:', error);

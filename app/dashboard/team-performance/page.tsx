@@ -43,10 +43,13 @@ function TeamPerformance() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('Auth status:', status);
+    console.log('Is authenticated:', isAuthenticated);
+    console.log('User:', user);
+
     if (status === 'loading') return;
 
     if (isAuthenticated && user) {
-      console.log('User:', user);  // Log the user data
       fetchTeamData();
     } else if (status === 'unauthenticated') {
       router.push('/auth/signin');
@@ -58,7 +61,7 @@ function TeamPerformance() {
       const response = await fetch('/api/team-performance');
       if (!response.ok) {
         const errorData = await response.json();
-        console.error('API Error:', errorData);  // Log the error response
+        console.error('API Error:', errorData);
         if (response.status === 403) {
           throw new Error('Forbidden: You do not have permission to access this data.');
         }
@@ -69,9 +72,7 @@ function TeamPerformance() {
       calculateMemberPerformance(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      if (err instanceof Error && err.message.includes('Forbidden')) {
-        console.error('Permission error:', err.message);
-      }
+      console.error('Error in fetchTeamData:', err);
     }
   };
 

@@ -1,4 +1,4 @@
-// app/auth.ts
+/* eslint-disable no-console */
 import { NextAuthOptions, User } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
@@ -33,6 +33,7 @@ export const authOptions: NextAuthOptions = {
         if (!isPasswordValid) {
           return null;
         }
+        console.log('Authorized user:', { id: user.id.toString(), email: user.email, role: user.role });
         return { id: user.id.toString(), email: user.email, role: user.role };
       },
     }),
@@ -43,6 +44,7 @@ export const authOptions: NextAuthOptions = {
         token.role = user.role;
         token.email = user.email;
       }
+      console.log('JWT callback, token:', JSON.stringify(token, null, 2));
       return token;
     },
     async session({ session, token }: { session: any; token: JWT }) {
@@ -50,6 +52,7 @@ export const authOptions: NextAuthOptions = {
         session.user.role = token.role as string;
         session.user.email = token.email as string;
       }
+      console.log('Session callback, session:', JSON.stringify(session, null, 2));
       return session;
     },
   },
