@@ -19,11 +19,13 @@ interface Team {
   leader?: User;
 }
 
+const NO_LEADER = 'no-leader';
+
 export default function TeamManagement() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [newTeamName, setNewTeamName] = useState('');
-  const [selectedLeader, setSelectedLeader] = useState<string>('');
+  const [selectedLeader, setSelectedLeader] = useState<string>(NO_LEADER);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -82,14 +84,17 @@ export default function TeamManagement() {
       const response = await fetch('/api/teams', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newTeamName, leaderId: selectedLeader ? parseInt(selectedLeader) : null }),
+        body: JSON.stringify({ 
+          name: newTeamName, 
+          leaderId: selectedLeader !== NO_LEADER ? parseInt(selectedLeader) : null 
+        }),
       });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to create team');
       }
       setNewTeamName('');
-      setSelectedLeader('');
+      setSelectedLeader(NO_LEADER);
       await fetchTeams();
       setSuccess('Team created successfully');
     } catch (error) {
@@ -111,7 +116,10 @@ export default function TeamManagement() {
       const response = await fetch('/api/teams', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: teamId, leaderId: leaderId ? parseInt(leaderId) : null }),
+        body: JSON.stringify({ 
+          id: teamId, 
+          leaderId: leaderId !== NO_LEADER ? parseInt(leaderId) : null 
+        }),
       });
       if (!response.ok) {
         const errorData = await response.json();
@@ -194,7 +202,7 @@ export default function TeamManagement() {
                 <SelectValue placeholder="Select a leader (optional)" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">No leader</SelectItem>
+                <SelectItem value={NO_LEADER}>No leader</SelectItem>
                 {users.map((user) => (
                   <SelectItem key={user.id} value={user.id.toString()}>
                     {user.email}
@@ -235,14 +243,14 @@ export default function TeamManagement() {
                   </div>
                   <div className="flex items-center space-x-2">
                     <Select 
-                      value={team.leader?.id.toString() || ''} 
+                      value={team.leader?.id.toString() || NO_LEADER} 
                       onValueChange={(value) => handleUpdateTeamLeader(team.id, value)}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select a leader" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">No leader</SelectItem>
+                        <SelectItem value={NO_LEADER}>No leader</SelectItem>
                         {users.map((user) => (
                           <SelectItem key={user.id} value={user.id.toString()}>
                             {user.email}
