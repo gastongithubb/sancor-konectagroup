@@ -23,7 +23,7 @@ model User {
 model Team {
   id       Int       @id @default(autoincrement())
   name     String
-  leaderId Int?      @unique
+  leaderId Int? @unique
   leader   User?     @relation("TeamLeader", fields: [leaderId], references: [id])
   members  User[]    @relation("TeamMembers")
   nps      NPS[]
