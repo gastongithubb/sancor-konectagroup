@@ -3,12 +3,12 @@
 'use client'
 
 import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuth } from '@/app/contexts/AuthContext';
 
 const NPSChart = dynamic(() => import('@/components/NpsCharts'), { ssr: false });
 
@@ -35,22 +35,23 @@ interface Team {
 }
 
 function TeamPerformance() {
-  const [isClient, setIsClient] = useState(false);
   const [team, setTeam] = useState<Team | null>(null);
   const [memberPerformance, setMemberPerformance] = useState<MemberPerformance[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  const { data: session, status } = useSession();
+  const { isAuthenticated, user, status } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (isClient && status === 'authenticated') {
-      console.log('Session:', session);  // Log the session data
+    if (status === 'loading') return;
+
+    if (isAuthenticated && user) {
+      console.log('User:', user);  // Log the user data
       fetchTeamData();
-    } else if (isClient && status === 'unauthenticated') {
+    } else if (status === 'unauthenticated') {
       router.push('/auth/signin');
     }
-  }, [isClient, status, router, session]);
+  }, [isAuthenticated, user, status, router]);
 
   const fetchTeamData = async () => {
     try {
@@ -63,7 +64,7 @@ function TeamPerformance() {
         }
         throw new Error('Failed to fetch team data');
       }
-      const data = await response.json();
+      const data: Team = await response.json();
       setTeam(data);
       calculateMemberPerformance(data);
     } catch (err) {
@@ -73,7 +74,6 @@ function TeamPerformance() {
       }
     }
   };
-
 
   const calculateMemberPerformance = (team: Team) => {
     const thirtyDaysAgo = new Date();
@@ -101,7 +101,7 @@ function TeamPerformance() {
     setMemberPerformance(performance);
   };
 
-  if (!isClient || status === 'loading') {
+  if (status === 'loading') {
     return <div>Loading...</div>;
   }
 
