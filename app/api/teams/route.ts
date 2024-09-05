@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // api/teams/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
@@ -26,11 +27,9 @@ export async function POST(request: NextRequest) {
   try {
     const { name, leaderId } = await request.json();
 
-    // eslint-disable-next-line no-console
     console.log('Solicitud recibida para crear equipo:', { name, leaderId });
 
     if (!name) {
-      // eslint-disable-next-line no-console
       console.log('Creación de equipo fallida: El nombre es requerido');
       return NextResponse.json({ error: 'El nombre del equipo es requerido' }, { status: 400 });
     }
@@ -45,26 +44,26 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      let leaderIdNumber: number | undefined;
+      const teamData: Prisma.TeamCreateInput = { name };
       
       if (leaderId) {
-        leaderIdNumber = parseInt(leaderId, 10);
+        const leaderIdNumber = parseInt(leaderId, 10);
         const leader = await prisma.user.findUnique({
           where: { id: leaderIdNumber },
         });
         if (!leader) {
           return NextResponse.json({ error: 'Líder no encontrado' }, { status: 400 });
         }
+        teamData.leader = { connect: { id: leaderIdNumber } };
       }
 
+      console.log('Intentando crear equipo con datos:', teamData);
+
       const newTeam = await prisma.team.create({
-        data: {
-          name,
-          ...(leaderIdNumber ? { leader: { connect: { id: leaderIdNumber } } } : {}),
-        },
+        data: teamData,
+        include: { leader: true }, // Incluir información del líder en la respuesta
       });
 
-      // eslint-disable-next-line no-console
       console.log('Equipo creado exitosamente:', newTeam);
       return NextResponse.json(newTeam, { status: 201 });
     } catch (prismaError) {
@@ -75,6 +74,8 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: 'Ya existe un equipo con este nombre o el líder ya está asignado a otro equipo' }, { status: 400 });
         } else if (prismaError.code === 'P2003') {
           return NextResponse.json({ error: 'ID de líder inválido' }, { status: 400 });
+        } else if (prismaError.code === 'P2011') {
+          return NextResponse.json({ error: 'El líder es requerido para crear un equipo. Verifica tu esquema de base de datos.' }, { status: 400 });
         }
       }
       

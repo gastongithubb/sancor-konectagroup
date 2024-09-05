@@ -16,6 +16,7 @@ export default function TeamManagement() {
   const [newTeamName, setNewTeamName] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -23,6 +24,7 @@ export default function TeamManagement() {
   }, []);
 
   const fetchTeams = async () => {
+    setIsLoading(true);
     try {
       const response = await fetch('/api/teams');
       if (!response.ok) {
@@ -37,6 +39,8 @@ export default function TeamManagement() {
       } else {
         setError('An unknown error occurred while fetching teams');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -44,6 +48,7 @@ export default function TeamManagement() {
     e.preventDefault();
     setError('');
     setSuccess('');
+    setIsLoading(true);
     try {
       const response = await fetch('/api/teams', {
         method: 'POST',
@@ -56,7 +61,7 @@ export default function TeamManagement() {
         throw new Error(errorData.error || 'Failed to create team');
       }
       setNewTeamName('');
-      fetchTeams();
+      await fetchTeams();
       setSuccess('Team created successfully');
     } catch (error) {
       if (error instanceof Error) {
@@ -64,6 +69,35 @@ export default function TeamManagement() {
       } else {
         setError('An unknown error occurred');
       }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteTeam = async (teamId: number) => {
+    setError('');
+    setSuccess('');
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/teams', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: teamId }),
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to delete team');
+      }
+      await fetchTeams();
+      setSuccess('Team deleted successfully');
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unknown error occurred while deleting the team');
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -97,8 +131,11 @@ export default function TeamManagement() {
               onChange={(e) => setNewTeamName(e.target.value)}
               placeholder="New Team Name"
               required
+              disabled={isLoading}
             />
-            <Button type="submit">Create Team</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? 'Creating...' : 'Create Team'}
+            </Button>
           </form>
         </CardContent>
       </Card>
@@ -108,13 +145,27 @@ export default function TeamManagement() {
           <CardTitle>Existing Teams</CardTitle>
         </CardHeader>
         <CardContent>
-          <ul className="space-y-2">
-            {teams.map((team) => (
-              <li key={team.id} className="bg-gray-100 p-2 rounded">
-                {team.name}
-              </li>
-            ))}
-          </ul>
+          {isLoading ? (
+            <p>Loading teams...</p>
+          ) : teams.length === 0 ? (
+            <p>No teams found.</p>
+          ) : (
+            <ul className="space-y-2">
+              {teams.map((team) => (
+                <li key={team.id} className="bg-gray-100 p-2 rounded flex justify-between items-center">
+                  <span>{team.name}</span>
+                  <Button 
+                    onClick={() => handleDeleteTeam(team.id)} 
+                    variant="destructive" 
+                    size="sm"
+                    disabled={isLoading}
+                  >
+                    Delete
+                  </Button>
+                </li>
+              ))}
+            </ul>
+          )}
         </CardContent>
       </Card>
     </div>
