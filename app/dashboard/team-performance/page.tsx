@@ -30,7 +30,7 @@ interface Team {
   }[];
 }
 
-export default function TeamPerformance() {
+function TeamPerformanceContent() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [team, setTeam] = useState<Team | null>(null);
@@ -141,5 +141,11 @@ export default function TeamPerformance() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function TeamPerformance() {
+  return (
+    <TeamPerformanceContent />
   );
 }
