@@ -4,6 +4,25 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { Prisma } from '@prisma/client';
 
+export async function GET() {
+  try {
+    const teams = await prisma.team.findMany({
+      include: {
+        leader: {
+          select: {
+            id: true,
+            email: true,
+          },
+        },
+      },
+    });
+    return NextResponse.json(teams);
+  } catch (error) {
+    console.error('Error al obtener equipos:', error);
+    return NextResponse.json({ error: 'Error al obtener equipos' }, { status: 500 });
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { name, leaderId } = await request.json();
