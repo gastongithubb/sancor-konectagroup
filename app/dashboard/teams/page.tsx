@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/app/components/ui/ca
 interface Team {
   id: number;
   name: string;
+  leader?: { id: number; email: string };
 }
 
 export default function TeamManagement() {
@@ -153,7 +154,7 @@ export default function TeamManagement() {
             <ul className="space-y-2">
               {teams.map((team) => (
                 <li key={team.id} className="bg-gray-100 p-2 rounded flex justify-between items-center">
-                  <span>{team.name}</span>
+                  <span>{team.name} {team.leader ? `(Leader: ${team.leader.email})` : '(No leader)'}</span>
                   <Button 
                     onClick={() => handleDeleteTeam(team.id)} 
                     variant="destructive" 
