@@ -1,85 +1,145 @@
-// app/dashboard/team-performance/page.tsx
-import { getServerSession } from 'next-auth/next';
-import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/prisma';
-import { authOptions } from '@/app/auth';
+'use client'
+
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import NPSChart from '@/components/NpsCharts';
 
-export default async function TeamPerformance() {
-  const session = await getServerSession(authOptions);
+interface MemberPerformance {
+  name: string;
+  casesHandled: number;
+  averageResolutionTime: number;
+}
 
-  if (!session || !session.user || (session.user as any).role !== 'leader') {
-    redirect('/auth/signin');
+interface Team {
+  id: number;
+  name: string;
+  members: {
+    email: string;
+    assignedCases: {
+      createdAt: string;
+      updatedAt: string;
+    }[];
+  }[];
+  nps: {
+    score: number;
+    date: string;
+  }[];
+}
+
+export default function TeamPerformance() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [team, setTeam] = useState<Team | null>(null);
+  const [memberPerformance, setMemberPerformance] = useState<MemberPerformance[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (status === 'unauthenticated' || (session?.user as any)?.role !== 'leader') {
+      router.push('/auth/signin');
+    } else if (status === 'authenticated') {
+      fetchTeamData();
+    }
+  }, [status, session, router]);
+
+  const fetchTeamData = async () => {
+    try {
+      const response = await fetch('/api/team-performance');
+      if (!response.ok) {
+        throw new Error('Failed to fetch team data');
+      }
+      const data: Team = await response.json();
+      setTeam(data);
+      calculateMemberPerformance(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An unknown error occurred');
+    }
+  };
+
+  const calculateMemberPerformance = (team: Team) => {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const performance = team.members.map((member) => {
+      const recentCases = member.assignedCases.filter(
+        (c) => new Date(c.createdAt) >= thirtyDaysAgo
+      );
+      const totalResolutionTime = recentCases.reduce(
+        (acc, curr) =>
+          acc + (new Date(curr.updatedAt).getTime() - new Date(curr.createdAt).getTime()),
+        0
+      );
+      return {
+        name: member.email,
+        casesHandled: recentCases.length,
+        averageResolutionTime:
+          recentCases.length > 0
+            ? totalResolutionTime / recentCases.length / (1000 * 60 * 60)
+            : 0,
+      };
+    });
+
+    setMemberPerformance(performance);
+  };
+
+  if (status === 'loading') {
+    return <div>Loading...</div>;
   }
 
-  const user = await prisma.user.findUnique({
-    where: { email: (session.user as any).email },
-    include: {
-      leadingTeam: {
-        include: {
-          members: {
-            include: {
-              assignedCases: {
-                where: {
-                  createdAt: {
-                    gte: new Date(new Date().setDate(new Date().getDate() - 30)),
-                  },
-                },
-              },
-            },
-          },
-          nps: {
-            take: 30,
-            orderBy: { date: 'desc' },
-          },
-        },
-      },
-    },
-  });
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTitle>Error</AlertTitle>
+        <AlertDescription>{error}</AlertDescription>
+      </Alert>
+    );
+  }
 
-  if (!user || !user.leadingTeam) {
+  if (!team) {
     return <div>No team found for this leader</div>;
   }
 
-  const memberPerformance = user.leadingTeam.members.map((member) => ({
-    name: member.email,
-    casesHandled: member.assignedCases.length,
-    averageResolutionTime:
-      member.assignedCases.reduce(
-        (acc, curr) => acc + (curr.updatedAt.getTime() - curr.createdAt.getTime()),
-        0
-      ) /
-      member.assignedCases.length /
-      (1000 * 60 * 60), // in hours
-  }));
-
   return (
-    <div>
-      <h1>Team Performance</h1>
-      <h2>Team: {user.leadingTeam.name}</h2>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Team Performance</h1>
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Team: {team.name}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <h3 className="text-lg font-semibold mb-2">NPS Over Time</h3>
+          <NPSChart teamId={team.id} />
+        </CardContent>
+      </Card>
 
-      <h3>NPS Over Time</h3>
-      <NPSChart teamId={user.leadingTeam.id} />
-
-      <h3>Member Performance (Last 30 Days)</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Cases Handled</th>
-            <th>Avg. Resolution Time (hours)</th>
-          </tr>
-        </thead>
-        <tbody>
-          {memberPerformance.map((member) => (
-            <tr key={member.name}>
-              <td>{member.name}</td>
-              <td>{member.casesHandled}</td>
-              <td>{member.averageResolutionTime.toFixed(2)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+      <Card>
+        <CardHeader>
+          <CardTitle>Member Performance (Last 30 Days)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name</TableHead>
+                <TableHead>Cases Handled</TableHead>
+                <TableHead>Avg. Resolution Time (hours)</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {memberPerformance.map((member) => (
+                <TableRow key={member.name}>
+                  <TableCell>{member.name}</TableCell>
+                  <TableCell>{member.casesHandled}</TableCell>
+                  <TableCell>{member.averageResolutionTime.toFixed(2)}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }
