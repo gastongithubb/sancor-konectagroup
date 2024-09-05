@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // api/teams/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
@@ -27,11 +26,22 @@ export async function POST(request: NextRequest) {
   try {
     const { name, leaderId } = await request.json();
 
+    // eslint-disable-next-line no-console
     console.log('Solicitud recibida para crear equipo:', { name, leaderId });
 
     if (!name) {
+      // eslint-disable-next-line no-console
       console.log('Creación de equipo fallida: El nombre es requerido');
       return NextResponse.json({ error: 'El nombre del equipo es requerido' }, { status: 400 });
+    }
+
+    // Verificar si ya existe un equipo con el mismo nombre
+    const existingTeam = await prisma.team.findFirst({
+      where: { name: name },
+    });
+
+    if (existingTeam) {
+      return NextResponse.json({ error: 'Ya existe un equipo con este nombre' }, { status: 400 });
     }
 
     try {
@@ -47,15 +57,14 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      const teamData: Prisma.TeamCreateInput = {
-        name,
-        ...(leaderIdNumber ? { leader: { connect: { id: leaderIdNumber } } } : {}),
-      };
-
       const newTeam = await prisma.team.create({
-        data: teamData,
+        data: {
+          name,
+          ...(leaderIdNumber ? { leader: { connect: { id: leaderIdNumber } } } : {}),
+        },
       });
 
+      // eslint-disable-next-line no-console
       console.log('Equipo creado exitosamente:', newTeam);
       return NextResponse.json(newTeam, { status: 201 });
     } catch (prismaError) {
@@ -80,5 +89,24 @@ export async function POST(request: NextRequest) {
       error: 'Error inesperado durante la creación del equipo', 
       details: error instanceof Error ? error.message : String(error)
     }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { id } = await request.json();
+
+    if (!id) {
+      return NextResponse.json({ error: 'Se requiere el ID del equipo' }, { status: 400 });
+    }
+
+    const deletedTeam = await prisma.team.delete({
+      where: { id: parseInt(id, 10) },
+    });
+
+    return NextResponse.json({ message: 'Equipo eliminado exitosamente', team: deletedTeam });
+  } catch (error) {
+    console.error('Error al eliminar el equipo:', error);
+    return NextResponse.json({ error: 'Error al eliminar el equipo' }, { status: 500 });
   }
 }
