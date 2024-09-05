@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/auth';
 import CaseList from '@/components/CaseList';
 import ReportCase from '@/components/ReportCase';
+import { revalidateData } from '@/lib/revalidateHelper';
 
 export default async function AgentDashboard() {
   const session = await getServerSession(authOptions);
@@ -27,6 +28,9 @@ export default async function AgentDashboard() {
   if (!user || !user.team) {
     return <div>No team found for this agent</div>;
   }
+
+  // Revalidar los datos
+  await revalidateData('/dashboard/agent');
 
   return (
     <div>

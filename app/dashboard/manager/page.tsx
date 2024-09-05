@@ -1,3 +1,4 @@
+// app/dashboard/manager/page.tsx
 import React from 'react';
 import { getServerSession } from 'next-auth/next';
 import { redirect } from 'next/navigation';
@@ -10,6 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { revalidateData } from '@/lib/revalidateHelper';
 
 interface ExtendedUser {
   role?: string;
@@ -45,6 +47,9 @@ export default async function ManagerDashboard() {
         },
       },
     });
+
+    // Revalidar los datos
+    await revalidateData('/dashboard/manager');
 
     return (
       <div className="container mx-auto p-6">

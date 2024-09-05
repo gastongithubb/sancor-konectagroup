@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { authOptions } from '@/app/auth';
 import TeamPerformance from '@/components/TeamPerfomance';
 import CaseDistribution from '@/components/CaseDistribution';
+import { revalidateData } from '@/lib/revalidateHelper';
 
 export default async function LeaderDashboard() {
   const session = await getServerSession(authOptions);
@@ -41,6 +42,9 @@ export default async function LeaderDashboard() {
     _count: user.leadingTeam._count,
     nps: user.leadingTeam.nps,
   };
+
+  // Revalidar los datos
+  await revalidateData('/dashboard/leader');
 
   return (
     <div>
