@@ -38,27 +38,28 @@ function TeamPerformance() {
   const [memberPerformance, setMemberPerformance] = useState<MemberPerformance[]>([]);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const { data: session, status } = useSession();
   const router = useRouter();
 
   useEffect(() => {
-    if (isClient) {
-      if (status === 'unauthenticated' || (session?.user as any)?.role !== 'leader') {
-        router.push('/auth/signin');
-      } else if (status === 'authenticated') {
-        fetchTeamData();
-      }
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (isClient && status === 'authenticated') {
+      fetchTeamData();
+    } else if (isClient && status === 'unauthenticated') {
+      router.push('/auth/signin');
     }
-  }, [isClient, status, session, router]);
+  }, [isClient, status, router]);
 
   const fetchTeamData = async () => {
     try {
       const response = await fetch('/api/team-performance');
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Unauthorized: Please log in again.');
+        }
         throw new Error('Failed to fetch team data');
       }
       const data: Team = await response.json();
@@ -66,8 +67,12 @@ function TeamPerformance() {
       calculateMemberPerformance(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
+      if (err instanceof Error && err.message.includes('Unauthorized')) {
+        router.push('/auth/signin');
+      }
     }
   };
+
 
   const calculateMemberPerformance = (team: Team) => {
     const thirtyDaysAgo = new Date();
