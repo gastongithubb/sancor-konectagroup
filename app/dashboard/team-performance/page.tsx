@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
 'use client'
 
 import { useEffect, useState } from 'react';
@@ -42,33 +44,32 @@ function TeamPerformance() {
   const router = useRouter();
 
   useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  useEffect(() => {
     if (isClient && status === 'authenticated') {
+      console.log('Session:', session);  // Log the session data
       fetchTeamData();
     } else if (isClient && status === 'unauthenticated') {
       router.push('/auth/signin');
     }
-  }, [isClient, status, router]);
+  }, [isClient, status, router, session]);
 
   const fetchTeamData = async () => {
     try {
       const response = await fetch('/api/team-performance');
       if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Unauthorized: Please log in again.');
+        const errorData = await response.json();
+        console.error('API Error:', errorData);  // Log the error response
+        if (response.status === 403) {
+          throw new Error('Forbidden: You do not have permission to access this data.');
         }
         throw new Error('Failed to fetch team data');
       }
-      const data: Team = await response.json();
+      const data = await response.json();
       setTeam(data);
       calculateMemberPerformance(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An unknown error occurred');
-      if (err instanceof Error && err.message.includes('Unauthorized')) {
-        router.push('/auth/signin');
+      if (err instanceof Error && err.message.includes('Forbidden')) {
+        console.error('Permission error:', err.message);
       }
     }
   };
