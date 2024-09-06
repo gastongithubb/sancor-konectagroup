@@ -34,9 +34,14 @@ const manejarError = (error: unknown) => {
 
 // Middleware de autenticación
 const autenticar = async (request: NextRequest) => {
-  const token = request.headers.get('Authorization')?.split(' ')[1];
-  if (!token) {
-    throw new Error('No autorizado: Token no proporcionado');
+  const authHeader = request.headers.get('Authorization');
+  if (!authHeader) {
+    throw new Error('No autorizado: Encabezado de autorización no proporcionado');
+  }
+
+  const [type, token] = authHeader.split(' ');
+  if (type !== 'Bearer' || !token) {
+    throw new Error('No autorizado: Formato de token inválido');
   }
 
   if (!process.env.JWT_SECRET) {
@@ -47,7 +52,13 @@ const autenticar = async (request: NextRequest) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string, email: string };
     return decoded;
   } catch (error) {
-    throw new Error('No autorizado: Token inválido');
+    if (error instanceof jwt.JsonWebTokenError) {
+      throw new Error('No autorizado: Token JWT inválido');
+    }
+    if (error instanceof jwt.TokenExpiredError) {
+      throw new Error('No autorizado: Token JWT expirado');
+    }
+    throw new Error('No autorizado: Error en la verificación del token');
   }
 };
 

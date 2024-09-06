@@ -1,6 +1,8 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 'use client'
 
 import React, { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -22,6 +24,7 @@ interface Team {
 const NO_LEADER = 'no-leader';
 
 export default function TeamManagement() {
+  const { data: session } = useSession();
   const [teams, setTeams] = useState<Team[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [newTeamName, setNewTeamName] = useState('');
@@ -32,14 +35,20 @@ export default function TeamManagement() {
   const router = useRouter();
 
   useEffect(() => {
-    fetchTeams();
-    fetchUsers();
-  }, []);
+    if (session?.user?.accessToken) {
+      fetchTeams();
+      fetchUsers();
+    }
+  }, [session]);
 
   const fetchTeams = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/teams');
+      const response = await fetch('/api/teams', {
+        headers: {
+          'Authorization': `Bearer ${session?.user?.accessToken}`,
+        },
+      });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch teams');
@@ -59,7 +68,11 @@ export default function TeamManagement() {
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch('/api/users');
+      const response = await fetch('/api/users', {
+        headers: {
+          'Authorization': `Bearer ${session?.user?.accessToken}`,
+        },
+      });
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch users');
@@ -83,7 +96,10 @@ export default function TeamManagement() {
     try {
       const response = await fetch('/api/teams', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.user?.accessToken}`,
+        },
         body: JSON.stringify({ 
           name: newTeamName, 
           leaderId: selectedLeader !== NO_LEADER ? parseInt(selectedLeader) : null 
@@ -115,7 +131,10 @@ export default function TeamManagement() {
     try {
       const response = await fetch('/api/teams', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.user?.accessToken}`,
+        },
         body: JSON.stringify({ 
           id: teamId, 
           leaderId: leaderId !== NO_LEADER ? parseInt(leaderId) : null 
@@ -145,7 +164,10 @@ export default function TeamManagement() {
     try {
       const response = await fetch('/api/teams', {
         method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.user?.accessToken}`,
+        },
         body: JSON.stringify({ id: teamId }),
       });
       if (!response.ok) {
@@ -164,6 +186,10 @@ export default function TeamManagement() {
       setIsLoading(false);
     }
   };
+
+  if (!session) {
+    return <div>Please sign in to manage teams.</div>;
+  }
 
   return (
     <div className="container mx-auto p-4">

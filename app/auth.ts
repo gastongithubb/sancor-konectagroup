@@ -1,10 +1,10 @@
 /* eslint-disable no-console */
 import { NextAuthOptions, User } from 'next-auth';
-import { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { prisma } from '@/lib/prisma';
 import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
 
 interface ExtendedUser extends User {
   role?: string;
@@ -39,22 +39,27 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user?: ExtendedUser }) {
+    async jwt({ token, user }) {
       if (user) {
-        token.role = user.role;
-        token.email = user.email;
         token.id = user.id;
+        token.email = user.email;
+        token.role = user.role;
+        // Generar un nuevo token JWT
+        token.accessToken = jwt.sign(
+          { userId: user.id, email: user.email, role: user.role },
+          process.env.JWT_SECRET!,
+          { expiresIn: '1h' }
+        );
       }
-      console.log('JWT callback, token:', JSON.stringify(token, null, 2));
       return token;
     },
-    async session({ session, token }: { session: any; token: JWT }) {
-      if (session?.user) {
-        session.user.role = token.role as string;
-        session.user.email = token.email as string;
+    async session({ session, token }) {
+      if (session.user) {
         session.user.id = token.id as string;
+        session.user.email = token.email as string;
+        session.user.role = token.role as string;
+        session.user.accessToken = token.accessToken as string;
       }
-      console.log('Session callback, session:', JSON.stringify(session, null, 2));
       return session;
     },
   },
