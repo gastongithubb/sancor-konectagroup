@@ -1,11 +1,60 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PrismaClient } from '@prisma/client';
+import { z } from 'zod';
+import jwt from 'jsonwebtoken';
 
-const prisma = new PrismaClient();
+// Cliente Prisma singleton
+const globalForPrisma = global as unknown as { prisma: PrismaClient };
+const prisma = globalForPrisma.prisma || new PrismaClient();
+if (process.env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma;
 
-export async function GET() {
+// Esquemas de validación de entrada
+const crearEquipoSchema = z.object({
+  nombre: z.string().min(1),
+  idLider: z.number().optional(),
+});
+
+const actualizarEquipoSchema = z.object({
+  id: z.number(),
+  nombre: z.string().min(1).optional(),
+  idLider: z.number().nullable().optional(),
+});
+
+// Manejador de errores
+const manejarError = (error: unknown) => {
+  console.error('Error:', error);
+  if (error instanceof z.ZodError) {
+    return NextResponse.json({ error: 'Datos de entrada no válidos' }, { status: 400 });
+  }
+  if (error instanceof Error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json({ error: 'Ocurrió un error desconocido' }, { status: 500 });
+};
+
+// Middleware de autenticación
+const autenticar = async (request: NextRequest) => {
+  const token = request.headers.get('Authorization')?.split(' ')[1];
+  if (!token) {
+    throw new Error('No autorizado: Token no proporcionado');
+  }
+
+  if (!process.env.JWT_SECRET) {
+    throw new Error('Error de configuración del servidor: JWT_SECRET no está definido');
+  }
+
   try {
-    const teams = await prisma.team.findMany({
+    const decoded = jwt.verify(token, process.env.JWT_SECRET) as { userId: string, email: string };
+    return decoded;
+  } catch (error) {
+    throw new Error('No autorizado: Token inválido');
+  }
+};
+
+export async function GET(request: NextRequest) {
+  try {
+    await autenticar(request);
+    const equipos = await prisma.team.findMany({
       include: {
         leader: {
           select: {
@@ -15,67 +64,50 @@ export async function GET() {
         },
       },
     });
-    return NextResponse.json(teams);
+    return NextResponse.json(equipos);
   } catch (error) {
-    return NextResponse.json({ error: 'Error fetching teams' }, { status: 500 });
+    return manejarError(error);
   }
 }
 
 export async function POST(request: NextRequest) {
-  const { name, leaderId } = await request.json();
   try {
-    const team = await prisma.team.create({
-      data: {
-        name,
-        leaderId: leaderId || null,
-      },
-      include: {
-        leader: {
-          select: {
-            id: true,
-            email: true,
-          },
-        },
-      },
+    await autenticar(request);
+    const datos = await request.json();
+    const { nombre, idLider } = crearEquipoSchema.parse(datos);
+    const equipo = await prisma.team.create({
+      data: { name: nombre, leaderId: idLider || null },
+      include: { leader: { select: { id: true, email: true } } },
     });
-    return NextResponse.json(team, { status: 201 });
+    return NextResponse.json(equipo, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Error creating team' }, { status: 500 });
+    return manejarError(error);
   }
 }
 
 export async function PUT(request: NextRequest) {
-  const { id, name, leaderId } = await request.json();
   try {
-    const team = await prisma.team.update({
-      where: { id: Number(id) },
-      data: {
-        name,
-        leaderId: leaderId || null,
-      },
-      include: {
-        leader: {
-          select: {
-            id: true,
-            email: true,
-          },
-        },
-      },
+    await autenticar(request);
+    const datos = await request.json();
+    const { id, nombre, idLider } = actualizarEquipoSchema.parse(datos);
+    const equipo = await prisma.team.update({
+      where: { id },
+      data: { name: nombre, leaderId: idLider ?? undefined },
+      include: { leader: { select: { id: true, email: true } } },
     });
-    return NextResponse.json(team);
+    return NextResponse.json(equipo);
   } catch (error) {
-    return NextResponse.json({ error: 'Error updating team' }, { status: 500 });
+    return manejarError(error);
   }
 }
 
 export async function DELETE(request: NextRequest) {
-  const { id } = await request.json();
   try {
-    await prisma.team.delete({
-      where: { id: Number(id) },
-    });
-    return NextResponse.json({ message: 'Team deleted successfully' });
+    await autenticar(request);
+    const { id } = await request.json();
+    await prisma.team.delete({ where: { id: Number(id) } });
+    return NextResponse.json({ mensaje: 'Equipo eliminado con éxito' });
   } catch (error) {
-    return NextResponse.json({ error: 'Error deleting team' }, { status: 500 });
+    return manejarError(error);
   }
 }
